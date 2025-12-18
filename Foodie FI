@@ -1,0 +1,59 @@
+-- Foodied-Fi service: https://8weeksqlchallenge.com/case-study-3/
+
+-- B. Data Analysis Questions
+SELECT p.plan_id
+    , p.plan_name
+    , p.price
+    , s.customer_id 
+    , s.plan_id
+    , start_date
+FROM plans AS p
+LEFT JOIN subscriptions AS s
+ON p.plan_id = s.plan_id;
+
+
+-- 1. How many customers has Foodie_Fi ever had? 
+-- Ans. 1000
+SELECT COUNT(DISTINCT customer_ID)
+FROM subscriptions;
+
+
+-- 2. What is the monthly distribution of trial plan start_date values for our dataset - use the start of the month as the group by value
+SELECT 
+    MONTH(start_date) AS month
+    , COUNT(plan_id) AS count_of_plan_id
+FROM (
+    SELECT p.plan_id
+    , p.plan_name
+    , p.price
+    , s.customer_id 
+    , start_date
+FROM plans AS p
+LEFT JOIN subscriptions AS s
+ON p.plan_id = s.plan_id
+)
+WHERE plan_name = 'trial'
+GROUP BY MONTH(start_date)
+ORDER BY month ASC;
+
+
+-- 3. What plan start_date values occur after the year 2020 for our dataset? Show the breakdown by count of events for each plan_name
+SELECT plan_name
+    , COUNT(p.plan_id) AS count_of_events
+FROM plans AS p
+LEFT JOIN subscriptions AS s
+ON p.plan_id = s.plan_id
+WHERE YEAR(start_date) > '2020'
+GROUP BY plan_name;
+
+
+-- 4. What is the customer count and percentage of customers who have churned rounded to 1 decimal place?
+SELECT COUNT(DISTINCT s.customer_id) AS count_of_customers_churned
+     , ROUND( ( COUNT(DISTINCT s.customer_id) 
+     / 
+     (SELECT COUNT(DISTINCT customer_id) FROM plans AS p LEFT JOIN subscriptions AS s ON p.plan_id = s.plan_id) ) * 100, 1) 
+     AS percentage_churned
+FROM plans AS p
+LEFT JOIN subscriptions AS s
+ON p.plan_id = s.plan_id
+WHERE p.plan_id = 4
