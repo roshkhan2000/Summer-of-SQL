@@ -1,0 +1,17 @@
+-- 2. What is the monthly distribution of trial plan start_date values for our dataset - use the start of the month as the group by value
+SELECT 
+    MONTH(start_date) AS month
+    , COUNT(plan_id) AS count_of_plan_id
+FROM (
+    SELECT p.plan_id
+    , p.plan_name
+    , p.price
+    , s.customer_id 
+    , start_date
+FROM plans AS p
+LEFT JOIN subscriptions AS s
+ON p.plan_id = s.plan_id
+)
+WHERE plan_name = 'trial'
+GROUP BY MONTH(start_date)
+ORDER BY month ASC;
