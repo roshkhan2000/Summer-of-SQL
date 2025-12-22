@@ -1,0 +1,8 @@
+-- 3. What plan start_date values occur after the year 2020 for our dataset? Show the breakdown by count of events for each plan_name
+SELECT plan_name
+    , COUNT(p.plan_id) AS count_of_events
+FROM plans AS p
+LEFT JOIN subscriptions AS s
+ON p.plan_id = s.plan_id
+WHERE YEAR(start_date) > '2020'
+GROUP BY plan_name;
