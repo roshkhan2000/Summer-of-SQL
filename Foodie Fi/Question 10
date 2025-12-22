@@ -1,0 +1,61 @@
+-- 10. Can you further breakdown this average value into 30 day periods (i.e. 0-30 days, 31-60 days etc)
+WITH first_join_date AS (
+    SELECT customer_id
+        , p.plan_id
+        , start_date
+        , plan_name
+        , price
+        , ROW_NUMBER() OVER(PARTITION BY customer_id ORDER BY start_date) AS date_row_number
+    FROM subscriptions AS s
+    LEFT JOIN plans AS p
+    on p.plan_id = s.plan_id
+    ORDER BY 
+        customer_id ASC
+        , start_date ASC) 
+
+, pro_annual_date AS (
+SELECT customer_id
+        , p.plan_id
+        , start_date
+        , plan_name
+        , price
+        , CASE plan_name
+            WHEN 'pro annual' THEN 1 
+            ELSE 0 
+        END AS pro_annual_date
+    FROM subscriptions AS s
+    LEFT JOIN plans AS p
+    ON p.plan_id = s.plan_id
+    ORDER BY 
+        customer_id ASC
+        , start_date ASC) 
+
+, days_to_upgrade AS (
+    SELECT * 
+         , p.start_date - f.start_date AS days_to_upgrade
+    FROM pro_annual_date AS p
+    INNER JOIN first_join_date AS f
+    ON 
+        f.date_row_number = p.pro_annual_date
+        AND 
+        p.customer_id = f.customer_id)
+        
+SELECT 
+    CASE 
+        WHEN days_to_upgrade BETWEEN 0 AND 30 THEN '0-30'
+        WHEN days_to_upgrade BETWEEN 31 AND 60 THEN '31-60'
+        WHEN days_to_upgrade BETWEEN 61 AND 90 THEN '61-90'
+        WHEN days_to_upgrade BETWEEN 91 AND 120 THEN '91-120'
+        WHEN days_to_upgrade BETWEEN 121 AND 150 THEN '121-150'
+        ELSE '151 or above'
+    END AS bracket
+    , COUNT(CASE 
+        WHEN days_to_upgrade BETWEEN 0 AND 30 THEN '0-30'
+        WHEN days_to_upgrade BETWEEN 31 AND 60 THEN '31-60'
+        WHEN days_to_upgrade BETWEEN 61 AND 90 THEN '61-90'
+        WHEN days_to_upgrade BETWEEN 91 AND 120 THEN '91-120'
+        WHEN days_to_upgrade BETWEEN 121 AND 150 THEN '121-150'
+        ELSE '151 or above'
+    END) AS number_of_customers
+FROM days_to_upgrade
+GROUP BY 1;
