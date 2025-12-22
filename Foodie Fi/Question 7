@@ -1,0 +1,16 @@
+-- 7. What is the customer count and percentage breakdown of all 5 plan_name values at 2020-12-31?
+-- Ans taken from: https://github.com/wjsutton/data_with_danny_8_week_sql_challenge/blob/main/Case%20Study%203%20-%20Foodie%20Fi/week3ab_solutions.sql
+WITH CTE AS (
+SELECT *
+,ROW_NUMBER() OVER(PARTITION BY customer_id ORDER BY start_date DESC) as rn
+FROM subscriptions
+WHERE start_date <= '2020-12-31'
+)
+SELECT 
+plan_name,
+COUNT(customer_id) as customer_count,
+ROUND((COUNT(customer_id)/(SELECT COUNT(DISTINCT customer_id) FROM CTE))*100,1) as percent_of_customers
+FROM CTE
+INNER JOIN plans as P on CTE.plan_id = P.plan_id
+WHERE rn = 1
+GROUP BY plan_name;
