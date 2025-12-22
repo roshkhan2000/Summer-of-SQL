@@ -1,0 +1,10 @@
+-- 4. What is the customer count and percentage of customers who have churned rounded to 1 decimal place?
+SELECT COUNT(DISTINCT s.customer_id) AS count_of_customers_churned
+     , ROUND( ( COUNT(DISTINCT s.customer_id) 
+     / 
+     (SELECT COUNT(DISTINCT customer_id) FROM plans AS p LEFT JOIN subscriptions AS s ON p.plan_id = s.plan_id) ) * 100, 1) 
+     AS percentage_churned
+FROM plans AS p
+LEFT JOIN subscriptions AS s
+ON p.plan_id = s.plan_id
+WHERE p.plan_id = 4;
