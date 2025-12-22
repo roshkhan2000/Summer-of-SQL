@@ -1,0 +1,4 @@
+-- 1. How many customers has Foodie_Fi ever had? 
+-- Ans. 1000
+SELECT COUNT(DISTINCT customer_ID)
+FROM subscriptions;
