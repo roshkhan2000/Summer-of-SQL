@@ -1,0 +1,16 @@
+-- 11. How many customers downgraded from a pro monthly to a basic monthly plan in 2020?
+WITH CTE AS (
+SELECT *
+    , LAG(plan_name, 1) OVER(PARTITION BY CUSTOMER_ID ORDER BY start_date) AS previous_plan
+FROM subscriptions AS s
+INNER JOIN plans AS p
+ON s.plan_id = p.plan_id) 
+
+SELECT *
+FROM CTE
+WHERE
+    YEAR(start_date) = '2020'
+    AND 
+    plan_name = 'basic monthly'
+   AND 
+    previous_plan = 'pro monthly'
