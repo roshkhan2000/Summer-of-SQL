@@ -1,0 +1,39 @@
+-- 9. How many days on average does it take for a customer to an annual plan from the day they join Foodie-Fi?
+WITH first_join_date AS (
+    SELECT customer_id
+        , p.plan_id
+        , start_date
+        , plan_name
+        , price
+        , ROW_NUMBER() OVER(PARTITION BY customer_id ORDER BY start_date) AS date_row_number
+    FROM subscriptions AS s
+    LEFT JOIN plans AS p
+    on p.plan_id = s.plan_id
+    ORDER BY 
+        customer_id ASC
+        , start_date ASC) 
+
+, pro_annual_date AS (
+SELECT customer_id
+        , p.plan_id
+        , start_date
+        , plan_name
+        , price
+        , CASE plan_name
+            WHEN 'pro annual' THEN 1 
+            ELSE 0 
+        END AS pro_annual_date
+    FROM subscriptions AS s
+    LEFT JOIN plans AS p
+    ON p.plan_id = s.plan_id
+    ORDER BY 
+        customer_id ASC
+        , start_date ASC) 
+        
+SELECT AVG(p.start_date - f.start_date)
+FROM pro_annual_date AS p
+INNER JOIN first_join_date AS f
+ON 
+    f.date_row_number = p.pro_annual_date
+    AND 
+    p.customer_id = f.customer_id;
