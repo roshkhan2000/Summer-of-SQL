@@ -13,3 +13,10 @@ WITH CTE_next_plan AS (
         CUSTOMER_ID ASC
         , start_date ASC
 )
+
+SELECT next_plan
+    , count(next_plan) AS count_of_plans
+    , ROUND( ( count(next_plan) / (SELECT count(next_plan) FROM CTE_next_plan WHERE plan_name= 'trial') ) * 100, 1) AS percentage_of_plans
+FROM CTE_next_plan AS c
+WHERE plan_name = 'trial'
+GROUP BY next_plan;
