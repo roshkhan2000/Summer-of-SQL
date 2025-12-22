@@ -1,0 +1,29 @@
+-- 5. How many customers have churned straight after their initial free trial - what percentage is this rounded to the nearest whole number?
+
+-- below is a CTE which creates an additional column to tell us what the next plan is using window calcs
+WITH CTE AS (
+    SELECT p.plan_name
+        , p.price
+        , s.customer_id
+        , s.plan_id
+        , s.start_date
+        , LEAD(plan_name, 1) OVER(PARTITION BY customer_id ORDER BY start_date ASC) AS next_plan
+    FROM plans AS p
+    LEFT JOIN subscriptions AS S
+    ON p.plan_id = s.plan_id
+    ORDER BY 
+        CUSTOMER_ID ASC
+        , start_date ASC
+) 
+
+SELECT
+    (SELECT COUNT(*) 
+             FROM CTE 
+             WHERE plan_name = 'trial' AND next_plan = 'churn') AS customers_churned
+    ,   ROUND(
+            (SELECT COUNT(*) 
+             FROM CTE 
+             WHERE plan_name = 'trial' AND next_plan = 'churn') 
+            / 
+            (SELECT COUNT(DISTINCT customer_id) 
+             FROM CTE) * 100, 0)  AS churn_rate;
