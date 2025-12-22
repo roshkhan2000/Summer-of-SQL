@@ -1,0 +1,10 @@
+-- 8. How many customers have upgraded to an annual plan in 2020?
+SELECT COUNT(*)
+FROM subscriptions AS s
+LEFT JOIN plans AS p
+on p.plan_id = s.plan_id
+WHERE 
+    YEAR(start_date) = '2020'
+    AND
+    plan_name = 'pro annual'
+ORDER BY start_date ASC;
